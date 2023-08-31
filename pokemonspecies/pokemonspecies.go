@@ -13,11 +13,11 @@ func Get(id string) (PokemonSpecies, error) {
 	if err != nil {
 		return PokemonSpecies{}, err
 	}
-	var pokemon PokemonSpecies
+	var species PokemonSpecies
 
-	err = json.Unmarshal(pokeByte, &pokemon)
+	err = json.Unmarshal(pokeByte, &species)
 	if err != nil {
 		return PokemonSpecies{}, err
 	}
-	return pokemon, nil
+	return species, nil
 }
