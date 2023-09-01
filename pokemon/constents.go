@@ -72,12 +72,36 @@ type PokemonStat struct {
 }
 
 type PokemonSprites struct {
+	FrontDefault     string              `json:"front_default"`
+	FrontShiny       string              `json:"front_shiny"`
+	FrontFemale      string              `json:"front_female"`
+	FrontShinyFemale string              `json:"front_shiny_female"`
+	BackDefault      string              `json:"back_default"`
+	BackShiny        string              `json:"back_shiny"`
+	BackFemale       string              `json:"back_female"`
+	BackShinyFemale  string              `json:"back_shiny_female"`
+	Other            PokemonSpritesOther `json:"other"`
+}
+
+type PokemonSpritesOther struct {
+	DreamWorld      PokemonSpritesDreamWorld `json:"dream_world"`
+	Home            PokemonSpritesHome       `json:"home"`
+	OfficialArtwork PokemonOfficialArtwork   `json:"official-artwork"`
+}
+
+type PokemonSpritesDreamWorld struct {
+	FrontDefault string `json:"front_default"`
+	FrontFemale  string `json:"front_female"`
+}
+
+type PokemonSpritesHome struct {
 	FrontDefault     string `json:"front_default"`
-	FrontShiny       string `json:"front_shiny"`
 	FrontFemale      string `json:"front_female"`
+	FrontShiny       string `json:"front_shiny"`
 	FrontShinyFemale string `json:"front_shiny_female"`
-	BackDefault      string `json:"back_default"`
-	BackShiny        string `json:"back_shiny"`
-	BackFemale       string `json:"back_female"`
-	BackShinyFemale  string `json:"back_shiny_female"`
+}
+
+type PokemonOfficialArtwork struct {
+	FrontDefault string `json:"front_default"`
+	FrontShiny   string `json:"front_shiny"`
 }
