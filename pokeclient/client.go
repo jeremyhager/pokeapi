@@ -6,20 +6,26 @@ import (
 	"net/http"
 )
 
-const POKEURL = "https://pokeapi.co/api/v2"
+const (
+	scheme   = "https"
+	host     = "pokeapi.co"
+	rootPath = "/api/v2"
+	retries  = 3
+)
 
 type Client struct {
-	// client     *http.Client
 	requestUrl string
 }
 
 // Init to create client
 //
-// Specify an endpoint eg. pokemon
+// Example:
+//
+//	client := pokeclint.Init("pokemon")
 func Init(endpoint string) *Client {
+	POKEURL := fmt.Sprintf("%v://%v/%v", scheme, host, rootPath)
 	reqUrl := fmt.Sprintf("%v/%v", POKEURL, endpoint)
 	client := &Client{
-		// client:     &http.Client{},
 		requestUrl: reqUrl,
 	}
 
