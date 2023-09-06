@@ -1,4 +1,4 @@
-package commonmodels
+package pokeapi
 
 type NamedAPIResource struct {
 	Name string `json:"name"`
