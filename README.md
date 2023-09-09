@@ -1,20 +1,46 @@
-# code-samples
-Code samples for different projects
-
-Currently a work in progress, but at the most basic level it can be run as follows:
+# Installation
+Install:  
 ```shell
-go build .
-code-samples pokeapi pokemon 1
+go get github.com/jeremyhager/pokeapi
 ```
 
-Or by running `main.go` directly:
-```shell
-go run main.go pokeapi pokemon 1
+Use:  
+```Go
+import "github.com/jeremyhager/pokeapi"
 ```
 
-Example output
-```shell
-❯ ./code-samples pokeapi pokemon 1
-pokemon info:
-{Name:bulbasaur Url:https://pokeapi.co/api/v2/pokemon-species/1/}
+# About
+An SDK/wrapper for pokeapi v2 in Go, baesd on the SDK linked from pokeapi.co https://github.com/mtslzr/pokeapi-go/
+
+## Improvements
+
+This SDK has some code improvements over `pokeapi-go` as well as updated types. For example, `Language` can contain a nested array of the `Name` struct. Within the original `pokeapi-go` package this is defined each time, while this SDK will define this once:
+
+```Go
+// github.com/mtslzr/pokeapi-go/blob/master/structs/utility.go
+type EvolutionChain struct {
+	BabyTriggerItem interface{} `json:"baby_trigger_item"`
+	Chain           struct {
+		EvolutionDetails []interface{} `json:"evolution_details"`
+		EvolvesTo        []struct {
+			EvolutionDetails []struct {
+    // ...
 ```
+
+```Go
+// github.com/jeremyhager/pokeapi/utility.go
+type EvolutionChain struct {
+	ID              int               `json:"id"`
+	BabyTriggerItem *NamedAPIResource `json:"baby_trigger_item,omitempty"`
+	Chain           ChainLink         `json:"chain"`
+}
+
+type ChainLink struct {
+	IsBaby           bool              `json:"is_baby,omitempty"`
+	Species          NamedAPIResource  `json:"species"`
+	EvolutionDetails []EvolutionDetail `json:"evolution_details,omitempty"`
+	EvolvesTo        []ChainLink       `json:"evolves_to,omitempty"`
+}
+```
+
+
