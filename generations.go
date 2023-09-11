@@ -1,6 +1,6 @@
 package pokeapi
 
-type Generations struct {
+type Generation struct {
 	ID             int                `json:"id"`
 	Name           string             `json:"name"`
 	Abilities      []NamedAPIResource `json:"abilities"`

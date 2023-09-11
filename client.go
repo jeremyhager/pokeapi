@@ -5,119 +5,114 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
+
+	"github.com/patrickmn/go-cache"
 )
 
-const (
-	scheme   = "https"
-	host     = "pokeapi.co"
-	rootPath = "/api/v2"
-	retries  = 3
-)
-
-// type Pokeapi interface {
-// 	Init(endpoint string) *Client
-// 	GetEvolutions(id string) (EvolutionChain, error)
-// 	GetSpecies(id string) (PokemonSpecies, error)
-// 	GetPokemon(id string) (Pokemon, error)
-// }
-
-type Client struct {
-	requestUrl string
+type RESTClient struct {
+	client     *http.Client
+	requestUrl *url.URL
+	cache      *cache.Cache
 }
 
-// Init to create client
-//
-// Example:
-//
-//	client := pokeclint.Init("pokemon")
-func Init(endpoint string) *Client {
-	POKEURL := fmt.Sprintf("%v://%v/%v", scheme, host, rootPath)
-	reqUrl := fmt.Sprintf("%v/%v", POKEURL, endpoint)
-	client := &Client{
-		requestUrl: reqUrl,
-	}
-
-	return client
-}
-
-func (c *Client) Get(id string) ([]byte, error) {
-	resp, err := http.Get(fmt.Sprintf("%v/%v", c.requestUrl, id))
+func init() {
+	newCache := cache.New(defaultCacheSettings.MinExpire, defaultCacheSettings.MaxExpire)
+	papiurl, err := buildClientEndpoint(papiEnv)
 	if err != nil {
-		return nil, err
+		panic(err)
+	}
+	client = &RESTClient{
+		requestUrl: papiurl,
+		cache:      newCache,
+	}
+}
+
+func (c *RESTClient) Get(pokeapiUrl string, pokeObj any) error {
+	item, found := client.cache.Get(pokeapiUrl)
+	if found && CacheSettings.UseCache {
+		if err := json.Unmarshal(item.([]byte), &pokeObj); err != nil {
+			return err
+		}
+		return nil
 	}
 
+	resp, err := http.Get(pokeapiUrl)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return body, nil
+	if err := json.Unmarshal(body, &pokeObj); err != nil {
+		return err
+	}
+	return nil
 
 }
 
 func GetSpecies(id string) (PokemonSpecies, error) {
-	client := Init("pokemon-species")
-
-	pokeByte, err := client.Get(id)
-	if err != nil {
-		return PokemonSpecies{}, err
-	}
 	var species PokemonSpecies
-
-	err = json.Unmarshal(pokeByte, &species)
-	if err != nil {
-		return PokemonSpecies{}, err
-	}
-	return species, nil
+	pokeapiUrl := client.urlBuilder(endpoints["pokemon-species"], id)
+	err := client.Get(pokeapiUrl, &species)
+	return species, err
 }
 
 func GetPokemon(id string) (Pokemon, error) {
-	client := Init("pokemon")
-
-	pokeByte, err := client.Get(id)
-	if err != nil {
-		return Pokemon{}, err
-	}
 	var pokemon Pokemon
-
-	err = json.Unmarshal(pokeByte, &pokemon)
-	if err != nil {
-		return Pokemon{}, err
-	}
-	return pokemon, nil
+	pokeapiUrl := client.urlBuilder(endpoints["pokemon"], id)
+	err := client.Get(pokeapiUrl, &pokemon)
+	return pokemon, err
 }
 
 func GetEvolutions(id string) (EvolutionChain, error) {
-	client := Init("evolution-chain")
-
-	chainByte, err := client.Get(id)
-	if err != nil {
-		return EvolutionChain{}, err
-	}
-	var chain EvolutionChain
-	// err = json.Compact()
-
-	err = json.Unmarshal(chainByte, &chain)
-	if err != nil {
-		return EvolutionChain{}, err
-	}
-	return chain, nil
+	var evolution EvolutionChain
+	pokeapiUrl := client.urlBuilder(endpoints["evolution-chain"], id)
+	err := client.Get(pokeapiUrl, &evolution)
+	return evolution, err
 }
 
-func GetGenerations(id string) (Generations, error) {
-	client := Init("generation")
+func GetGeneration(id string) (Generation, error) {
+	var generation Generation
+	pokeapiUrl := client.urlBuilder(endpoints["generation"], id)
+	err := client.Get(pokeapiUrl, &generation)
+	return generation, err
+}
 
-	chainByte, err := client.Get(id)
-	if err != nil {
-		return Generations{}, err
-	}
-	var generation Generations
-	// err = json.Compact()
+func GetNamedEndpoint(endpoint string) (Named, error) {
+	var named Named
+	pokeapiUrl := client.urlBuilder(endpoints[endpoint], "")
+	err := client.Get(pokeapiUrl, &named)
+	return named, err
+}
 
-	err = json.Unmarshal(chainByte, &generation)
+// buildClientEndpoint creates a URL for the given endpoint using the current configuration
+func buildClientEndpoint(env string) (*url.URL, error) {
+	papiurl, err := url.Parse(os.Getenv(env))
 	if err != nil {
-		return Generations{}, err
+		return nil, fmt.Errorf("could not parse env: %v", err)
 	}
-	return generation, nil
+	if papiEnvEmpty(papiurl.String()) {
+		return &papiDefault, nil
+	}
+	if papiurl.Host == "" {
+		return nil, fmt.Errorf("unable to parse url host from: %s\n", papiurl)
+	}
+
+	return papiurl, nil
+}
+
+func papiEnvEmpty(env string) bool {
+	if env == "" {
+		return true
+	}
+	return false
+}
+
+func (c *RESTClient) urlBuilder(endpoint, id string) string {
+	return fmt.Sprintf("%v/%v/%v", client.requestUrl.String(), endpoints[endpoint], id)
 }

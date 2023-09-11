@@ -1,5 +1,14 @@
 package pokeapi
 
+type Languages struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Official bool   `json:"official"`
+	ISO639   string `json:"iso639"`
+	ISO3166  string `json:"iso3166"`
+	Names    []Name `json:"names"`
+}
+
 type NamedAPIResource struct {
 	Name string `json:"name"`
 	Url  string `json:"url"`
