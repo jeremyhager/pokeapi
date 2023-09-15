@@ -1,9 +1,5 @@
 package pokeapi
 
-import (
-	"reflect"
-)
-
 type EvolutionChain struct {
 	ID              int               `json:"id"`
 	BabyTriggerItem *NamedAPIResource `json:"baby_trigger_item,omitempty"`
@@ -37,6 +33,16 @@ type EvolutionDetail struct {
 	TurnUpsideDown        bool              `json:"turn_upside_down,omitempty"`
 }
 
+// Get evolution chain by ID
+//
+//	chain, _ := GetEvolutionChain("80")
+func GetEvolutionChain(id string) (EvolutionChain, error) {
+	var evolution EvolutionChain
+	pokeapiUrl := client.urlBuilder(endpoints["evolution-chain"], id)
+	err := client.Get(pokeapiUrl, &evolution)
+	return evolution, err
+}
+
 // Returns a flat array of the evolution chain for the pokemon
 func (c *ChainLink) Flatten() ([]ChainLink, error) {
 	evolutionList := []ChainLink{}
@@ -57,28 +63,4 @@ func (c *ChainLink) Flatten() ([]ChainLink, error) {
 	}
 	return evolutionList, nil
 
-}
-
-func (e *EvolutionDetail) GetDetails() map[any]any {
-	keyValue := make(map[any]any)
-
-	v := reflect.ValueOf(*e)
-	typeOfS := v.Type()
-	// named := NamedAPIResource{}
-
-	for i := 0; i < v.NumField(); i++ {
-		fieldName := typeOfS.Field(i).Name
-		value := v.Field(i).Interface()
-		fieldType := v.Field(i).Type()
-		if (value != 0) && (value != nil) && (value != "") && (fieldType != reflect.TypeOf(&NamedAPIResource{})) {
-			// fmt.Printf("fieldType: %+v\t", fieldType)
-			// fmt.Printf("fieldName: %s\tValue: %+v\n", fieldName, value)
-
-			keyValue[fieldName] = value
-		} else if (value != 0) && (value != nil) && (value != "") && (fieldType == reflect.TypeOf(&NamedAPIResource{})) {
-			// fmt.Printf("fieldType: %+v\t", fieldType)
-			// fmt.Printf("fieldName: %s\tValue: %+v\n", fieldName, value)
-		}
-	}
-	return keyValue
 }

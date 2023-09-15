@@ -23,3 +23,10 @@ type PokemonFormSprites struct {
 	BackDefault  string `json:"back_default"`
 	BackShiny    string `json:"back_shiny"`
 }
+
+func GetPokemonForm(id string) (PokemonForm, error) {
+	var form PokemonForm
+	pokeapiUrl := client.urlBuilder(endpoints["pokemon-form"], id)
+	err := client.Get(pokeapiUrl, &form)
+	return form, err
+}

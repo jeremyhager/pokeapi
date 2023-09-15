@@ -50,6 +50,13 @@ type PokemonSpeciesVariety struct {
 	Pokemon   NamedAPIResource `json:"pokemon"`
 }
 
+func GetPokemonSpecies(id string) (PokemonSpecies, error) {
+	var species PokemonSpecies
+	pokeapiUrl := client.urlBuilder(endpoints["pokemon-species"], id)
+	err := client.Get(pokeapiUrl, &species)
+	return species, err
+}
+
 // Returns a flat array of all pokemon evolution species related to the current pokemon
 func (s *PokemonSpecies) FlattenEvolutions(chain *ChainLink) ([]PokemonSpecies, error) {
 	evolutionChainPokemon := []PokemonSpecies{}
@@ -59,7 +66,7 @@ func (s *PokemonSpecies) FlattenEvolutions(chain *ChainLink) ([]PokemonSpecies, 
 			return evolutionChainPokemon, nil
 		}
 
-		species, err := GetSpecies(evolution.Species.Name)
+		species, err := GetPokemonSpecies(evolution.Species.Name)
 		if err != nil {
 			return evolutionChainPokemon, err
 		}
@@ -78,9 +85,8 @@ func (s *PokemonSpecies) FlattenEvolutions(chain *ChainLink) ([]PokemonSpecies, 
 }
 
 // Returns the base species evolution from an evolution chain
-func (s *PokemonSpecies) GetBaseSpecies(chain *ChainLink) (PokemonSpecies, error) {
-	baseSpecies, err := GetSpecies(chain.Species.Name)
-	// fmt.Printf("base species Name: %v\n", baseSpecies.Name)
+func (s *PokemonSpecies) GetBasePokemonSpecies(chain *ChainLink) (PokemonSpecies, error) {
+	baseSpecies, err := GetPokemonSpecies(chain.Species.Name)
 	if err != nil {
 		return PokemonSpecies{}, err
 	}
