@@ -1,5 +1,6 @@
 package pokeapi
 
+// https://pokeapi.co/docs/v2#pokemon
 type Pokemon struct {
 	ID                     int                `json:"id"`
 	Name                   string             `json:"name"`
@@ -102,4 +103,11 @@ type PokemonSpritesHome struct {
 type PokemonOfficialArtwork struct {
 	FrontDefault string `json:"front_default"`
 	FrontShiny   string `json:"front_shiny"`
+}
+
+func GetPokemon(id string) (Pokemon, error) {
+	var pokemon Pokemon
+	pokeapiUrl := client.urlBuilder(endpoints["pokemon"], id)
+	err := client.Get(pokeapiUrl, &pokemon)
+	return pokemon, err
 }

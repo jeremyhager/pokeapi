@@ -6,3 +6,10 @@ type Named struct {
 	Previous string             `json:"previous"`
 	Results  []NamedAPIResource `json:"results"`
 }
+
+func GetNamedEndpoint(endpoint string) (Named, error) {
+	var named Named
+	pokeapiUrl := client.urlBuilder(endpoints[endpoint], "")
+	err := client.Get(pokeapiUrl, &named)
+	return named, err
+}

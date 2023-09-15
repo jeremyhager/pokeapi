@@ -11,3 +11,10 @@ type Generation struct {
 	Types          []NamedAPIResource `json:"types"`
 	VersionGroups  []NamedAPIResource `json:"version_groups"`
 }
+
+func GetGeneration(id string) (Generation, error) {
+	var generation Generation
+	pokeapiUrl := client.urlBuilder(endpoints["generation"], id)
+	err := client.Get(pokeapiUrl, &generation)
+	return generation, err
+}

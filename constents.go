@@ -3,7 +3,6 @@ package pokeapi
 import "net/url"
 
 var (
-	// endpoints   = make(map[string]string)
 	papiDefault = url.URL{
 		Scheme: "https",
 		Host:   "pokeapi.co",
@@ -15,7 +14,7 @@ var (
 
 // endpoints map from key:string to value:string. To change the endpoint, change the value.
 //
-// Example:
+// Example, chaging the ability endpoint:
 //
 //	"ability": "ability", change to "ability": "someOtherEndpoint"
 var endpoints = map[string]string{
